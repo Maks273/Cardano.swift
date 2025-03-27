@@ -114,7 +114,7 @@ public struct BlockfrostNetworkProvider: NetworkProvider {
         }
     }
     
-    public func getBalance(for address: Address,
+    public func getAssetsBalance(for address: Address,
                            _ cb: @escaping (Result<Value?, Error>) -> Void) {
         do {
             let _ = addressesApi.getAddress(address: try address.bech32()) { res in
