@@ -20,6 +20,9 @@ public protocol NetworkProvider {
     func getBalance(for address: Address,
                     _ cb: @escaping (Result<UInt64, Error>) -> Void)
     
+    func getBalance(for address: Address,
+                    _ cb: @escaping (Result<Value?, Error>) -> Void)
+    
     func getTransactions(for address: Address,
                          _ cb: @escaping (Result<[AddressTransaction], Error>) -> Void)
     

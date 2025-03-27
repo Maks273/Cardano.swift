@@ -114,6 +114,28 @@ public struct BlockfrostNetworkProvider: NetworkProvider {
         }
     }
     
+    public func getBalance(for address: Address,
+                           _ cb: @escaping (Result<Value?, Error>) -> Void) {
+        do {
+            let _ = addressesApi.getAddress(address: try address.bech32()) { res in
+                switch res {
+                case .success(let address):
+                    cb(Result {
+                        try Value(blockfrost: address.amount.map {
+                            (unit: $0.unit, quantity: $0.quantity)
+                        })
+                    })
+                case .failure(let error):
+                    handleError(error: error, expectedStatus: 404, response: nil, cb)
+                }
+            }
+        } catch {
+            self.config.apiResponseQueue.async {
+                cb(.failure(error))
+            }
+        }
+    }
+    
     public func getTransactions(for address: Address,
                                 _ cb: @escaping (Result<[AddressTransaction], Error>) -> Void) {
         do {
