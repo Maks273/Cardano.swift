@@ -16,12 +16,14 @@ public struct BlockfrostNetworkProvider: NetworkProvider {
     private let addressesApi: CardanoAddressesAPI
     private let transactionsApi: CardanoTransactionsAPI
     private let blocksApi: CardanoBlocksAPI
+    private let assetsApi: CardanoAssetsAPI
     
     public init(config: BlockfrostConfig) {
         self.config = config
         addressesApi = CardanoAddressesAPI(config: config)
         transactionsApi = CardanoTransactionsAPI(config: config)
         blocksApi = CardanoBlocksAPI(config: config)
+        assetsApi = CardanoAssetsAPI(config: config)
     }
     
     private func handleError<R>(error: Error,
@@ -246,6 +248,12 @@ public struct BlockfrostNetworkProvider: NetworkProvider {
                 Result { try TransactionHash(hex: hash.trimmingCharacters(in: ["\""])) }
             }
             cb(mapped)
+        }
+    }
+    
+    public func getAsset(asset: String, _ cb: @escaping (Result<Asset, any Error>) -> Void) {
+        let _ = assetsApi.getAsset(asset: asset) { result in
+            cb(result)
         }
     }
 }

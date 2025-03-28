@@ -6,22 +6,23 @@
 //
 
 import Foundation
+import BlockfrostSwiftSDK
 #if !COCOAPODS
 import CardanoCore
 #endif
 
 public protocol NetworkProvider {
     func getSlotNumber(_ cb: @escaping (Result<Int?, Error>) -> Void)
-
+    
     func getBlockProcessingTime(_ cb: @escaping (Result<TimeInterval?, Error>) -> Void)
-
+    
     func getBlockConfirmations(for hash: String, _ cb: @escaping (Result<Int, Error>) -> Void)
-
+    
     func getBalance(for address: Address,
                     _ cb: @escaping (Result<UInt64, Error>) -> Void)
     
     func getAssetsBalance(for address: Address,
-                    _ cb: @escaping (Result<Value?, Error>) -> Void)
+                          _ cb: @escaping (Result<Value?, Error>) -> Void)
     
     func getTransactions(for address: Address,
                          _ cb: @escaping (Result<[AddressTransaction], Error>) -> Void)
@@ -41,4 +42,8 @@ public protocol NetworkProvider {
     
     func submit(tx: Transaction,
                 _ cb: @escaping (Result<TransactionHash, Error>) -> Void)
+    
+    
+    func getAsset(asset: String,
+                _ cb: @escaping (Result<Asset, Error>) -> Void)
 }
