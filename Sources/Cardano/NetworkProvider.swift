@@ -40,6 +40,9 @@ public protocol NetworkProvider {
     func getUtxos(for transaction: TransactionHash,
                   _ cb: @escaping (Result<[TransactionUnspentOutput], Error>) -> Void)
     
+    func getContentUtxos(for transaction: TransactionHash,
+                  _ cb: @escaping (Result<TxContentUtxo, Error>) -> Void)
+    
     func submit(tx: Transaction,
                 _ cb: @escaping (Result<TransactionHash, Error>) -> Void)
     
