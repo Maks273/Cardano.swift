@@ -232,6 +232,19 @@ public struct BlockfrostNetworkProvider: NetworkProvider {
         }
     }
     
+    public func getContentUtxos(for transaction: TransactionHash,
+                         _ cb: @escaping (Result<TxContentUtxo, Error>) -> Void) {
+        do {
+            let _ = transactionsApi.getTransactionUtxos(hash: try transaction.bytes().hex(prefix: false)) { res in
+                cb(res)
+            }
+        } catch {
+            self.config.apiResponseQueue.async {
+                cb(.failure(error))
+            }
+        }
+    }
+    
     public func submit(tx: Transaction,
                        _ cb: @escaping (Result<TransactionHash, Error>) -> Void) {
         let bytes: Data
