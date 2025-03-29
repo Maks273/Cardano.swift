@@ -218,7 +218,7 @@ public struct BlockfrostNetworkProvider: NetworkProvider {
     public func getUtxos(for transaction: TransactionHash,
                          _ cb: @escaping (Result<[TransactionUnspentOutput], Error>) -> Void) {
         do {
-            let _ = transactionsApi.getTransactionUtxos(hash: try transaction.bytes().hex()) { res in
+            let _ = transactionsApi.getTransactionUtxos(hash: try transaction.bytes().hex(prefix: false)) { res in
                 cb(res.flatMap { txContentUtxo in
                     Result { try txContentUtxo.inputs.map {
                         try TransactionUnspentOutput(blockfrost: $0)
