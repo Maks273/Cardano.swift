@@ -14,6 +14,11 @@ public enum CardanoSendError: Error {
     case invalidAssetID
 }
 
+public struct CardanoTransaction {
+    public let body: TransactionBody
+    public let addresses: [Address]
+}
+
 public struct CardanoSendApi: CardanoApi {
     public weak var cardano: CardanoProtocol!
     
@@ -25,7 +30,7 @@ public struct CardanoSendApi: CardanoApi {
                     lovelace amount: UInt64,
                     from: Account,
                     change: Address? = nil,
-                    _ cb: @escaping ApiCallback<TransactionHash>) {
+                    _ cb: @escaping ApiCallback<CardanoTransaction>) {
         let addresses: [Address]
         let changeAddress: Address
         do {
@@ -60,7 +65,7 @@ public struct CardanoSendApi: CardanoApi {
                     from: [Address],
                     change: Address,
                     maxSlots: UInt32 = 300,
-                    _ cb: @escaping ApiCallback<TransactionHash>) {
+                    _ cb: @escaping ApiCallback<CardanoTransaction>) {
         let cardano = self.cardano!
         adaTransaction(to: to,
                        lovelace: amount,
@@ -77,10 +82,7 @@ public struct CardanoSendApi: CardanoApi {
                 }
                 do {
                     let transactionBody = try transactionBuilder.build()
-                    cardano.tx.signAndSubmit(tx: transactionBody,
-                                             with: addresses,
-                                             auxiliaryData: nil,
-                                             cb)
+                    cb(.success(CardanoTransaction(body: transactionBody, addresses: addresses)))
                 } catch {
                     cb(.failure(error))
                 }
@@ -88,6 +90,16 @@ public struct CardanoSendApi: CardanoApi {
                 cb(.failure(error))
             }
         }
+    }
+    
+    public func signAndSubmit(tx: TransactionBody,
+                              with addresses: [Address],
+                              auxiliaryData: AuxiliaryData?,
+                              _ cb: @escaping ApiCallback<TransactionHash>) {
+        cardano.tx.signAndSubmit(tx: tx,
+                                     with: addresses,
+                                     auxiliaryData: nil,
+                                     cb)
     }
 
     public func adaTransaction(to: Address,
