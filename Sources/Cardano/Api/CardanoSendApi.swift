@@ -154,7 +154,7 @@ public struct CardanoSendApi: CardanoApi {
                       lovelace amount: UInt64,
                       from: Account,
                       change: Address? = nil,
-                      _ cb: @escaping ApiCallback<TransactionHash>) {
+                      _ cb: @escaping ApiCallback<CardanoTransaction>) {
         let addresses: [Address]
         let changeAddress: Address
         do {
@@ -173,7 +173,7 @@ public struct CardanoSendApi: CardanoApi {
                       from: [Address],
                       change: Address,
                       maxSlots: UInt32 = 300,
-                      _ cb: @escaping ApiCallback<TransactionHash>) {
+                      _ cb: @escaping ApiCallback<CardanoTransaction>) {
         let cardano = self.cardano!
         tokenTransaction(assetID: assetID,
                          to: to,
@@ -191,10 +191,7 @@ public struct CardanoSendApi: CardanoApi {
                 }
                 do {
                     let transactionBody = try transactionBuilder.build()
-                    cardano.tx.signAndSubmit(tx: transactionBody,
-                                             with: addresses,
-                                             auxiliaryData: nil,
-                                             cb)
+                    cb(.success(CardanoTransaction(body: transactionBody, addresses: addresses)))
                 } catch {
                     cb(.failure(error))
                 }
@@ -229,7 +226,7 @@ public struct CardanoSendApi: CardanoApi {
                             }
                             let policyID = try PolicyID(bytes: policyIDData)
                             let assetName = try AssetName(name: assetNameData)
-                            let filteredUtxos = utxos.filter { utxo in
+                            var filteredUtxos = utxos.filter { utxo in
                                 utxo.output.amount.multiasset?.contains(where: { (key, value) in
                                     key == policyID && value.keys.firstIndex(of: assetName) != nil
                                 }) ?? false
@@ -259,6 +256,10 @@ public struct CardanoSendApi: CardanoApi {
                             }
                             try transactionBuilder.addInputsFrom(inputs: filteredUtxos,
                                                                  strategy: .largestFirstMultiAsset)
+                            if let mostAdaUtxo = utxos.max(by: { $0.output.amount.coin < $1.output.amount.coin }) { // TODO: temp fix
+                                filteredUtxos.append(mostAdaUtxo)
+                                try transactionBuilder.addInput(address: mostAdaUtxo.output.address, input: mostAdaUtxo.input, amount: Value(coin: mostAdaUtxo.output.amount.coin))
+                            }
                             let _ = try transactionBuilder.addChangeIfNeeded(address: change)
                             cb(.success((transactionBuilder, filteredUtxos)))
                         } catch {
