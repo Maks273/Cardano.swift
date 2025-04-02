@@ -183,11 +183,11 @@ public struct CardanoSendApi: CardanoApi {
                          maxSlots: maxSlots) { res in
             switch res {
             case .success((let transactionBuilder, let filteredUtxos)):
-                let addresses = transactionBuilder.inputs.map { input in
+                let addresses = transactionBuilder.inputs.compactMap { input in
                     filteredUtxos.first { utxo in
                         utxo.input == input.input
                         && utxo.output.amount == input.amount
-                    }!.output.address
+                    }?.output.address
                 }
                 do {
                     let transactionBody = try transactionBuilder.build()
@@ -256,7 +256,7 @@ public struct CardanoSendApi: CardanoApi {
                             }
                             try transactionBuilder.addInputsFrom(inputs: filteredUtxos,
                                                                  strategy: .largestFirstMultiAsset)
-                            if let mostAdaUtxo = utxos.max(by: { $0.output.amount.coin < $1.output.amount.coin }) { // TODO: temp fix
+                            if let mostAdaUtxo = utxos.max(by: { $0.output.amount.coin < $1.output.amount.coin }), !filteredUtxos.contains(mostAdaUtxo) { // TODO: temp fix
                                 filteredUtxos.append(mostAdaUtxo)
                                 try transactionBuilder.addInput(address: mostAdaUtxo.output.address, input: mostAdaUtxo.input, amount: Value(coin: mostAdaUtxo.output.amount.coin))
                             }
@@ -279,3 +279,4 @@ public struct CardanoSendApi: CardanoApi {
 extension CardanoProtocol {
     public var send: CardanoSendApi { try! getApi() }
 }
+
