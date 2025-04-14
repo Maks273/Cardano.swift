@@ -53,13 +53,13 @@ public struct Account: Hashable {
         )
     }
     
-    public func stakeAddress(networkID: UInt8) throws -> String {
+    public func stakeAddress(networkID: UInt8) throws -> Address {
         let stakeCredential = try stake()
         let rewardAddress = RewardAddress(
             network: networkID,
             payment: stakeCredential
         )
-        return try rewardAddress.toAddress().bech32()
+        return rewardAddress.toAddress()
     }
 
     public func extendedPaymentAddress(networkID: UInt8) throws -> ExtendedAddress {
